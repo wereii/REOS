@@ -1,3 +1,3 @@
 [submodule "src/bootloader/c-efi"]
 	path = src/bootloader/c-efi
-	url = https://github.com/c-util/c-efi
+	url = https://github.com/ludwhe/c-efi

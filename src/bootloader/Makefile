@@ -24,4 +24,4 @@ run: BOOTX64.efi
 	uefi-run $(SRCDIR)/BOOTX64.efi -- -net none -serial stdio
 
 clean:
-	$(RM) main.o main.so main.efi
+	$(RM) *.o *.efi
