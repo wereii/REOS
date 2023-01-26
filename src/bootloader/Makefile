@@ -21,7 +21,7 @@ all: BOOTX64.efi
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 run: BOOTX64.efi
-	uefi-run $(SRCDIR)/BOOTX64.efi -- -net none -serial stdio
+	uefi-run $(SRCDIR)/BOOTX64.efi -- -net none -serial stdio -norestart
 
 clean:
 	$(RM) *.o *.efi
