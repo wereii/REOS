@@ -1,7 +1,5 @@
 CC=clang
 
-TARGETS = BOOTX64.efi
-
 MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 SRCDIR = $(dir $(MKFILE_PATH))
 

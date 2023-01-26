@@ -1,17 +1,26 @@
 #include <c-efi.h>
 
-CEfiStatus efi_main(CEfiHandle h, CEfiSystemTable *st)
+#define NULL C_EFI_NULL
+
+#define ERR_CHECK(s)  \
+  if (C_EFI_ERROR(s)) \
+    return s;
+
+
+CEfiStatus
+Print(CEfiSystemTable *st, CEfiChar16 *msg)
 {
-  CEfiStatus r;
-  CEfiUSize x;
+  return st->con_out->output_string(st->con_out, msg);
+};
 
-  r = st->con_out->output_string(st->con_out, L"Hello World!\n");
-  if (C_EFI_ERROR(r))
-    return r;
+CEfiStatus efi_main(CEfiHandle EfiHandle, CEfiSystemTable *SystemTable)
+{
+  CEfiStatus status;
 
-  r = st->boot_services->wait_for_event(1, &st->con_in->wait_for_key, &x);
-  if (C_EFI_ERROR(r))
-    return r;
+  status = SystemTable->con_out->clear_screen(SystemTable->con_out);
+  ERR_CHECK(status)
+  status = Print(SystemTable, L"BOOTX INIT\n");
+  ERR_CHECK(status)
 
   return 0;
 }
