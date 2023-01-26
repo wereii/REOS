@@ -1,43 +1,29 @@
-CC=gcc
-ARCH := x86_64
-OBJCOPY := objcopy
+CC=clang
+
+TARGETS = BOOTX64.efi
 
 MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 SRCDIR = $(dir $(MKFILE_PATH))
 
-GNUEFI_PATH=$(SRCDIR)/gnu-efi
-GNUEFI_BUILD_DIR=$(GNUEFI_PATH)/$(ARCH)
+CFLAGS=-target x86_64-unknown-windows -std=c11 -Wall -Wextra	\
+		-ffreestanding -fshort-wchar -mno-red-zone 				\
+		-I$(SRCDIR)/c-efi/src
 
-CFLAGS=-std=c11 -Wno-error=pragmas -mno-red-zone -mno-avx -fPIC -g -O2 -Wall -Wextra -Werror	\
-		-fshort-wchar -fno-strict-aliasing -ffreestanding -fno-stack-protector -fno-stack-check -fno-merge-all-constants -maccumulate-outgoing-args	\
-		-DEFI_FUNCTION_WRAPPER -DCONFIG_x86_64 -DGNU_EFI_USE_MS_ABI -D__KERNEL__	\
-		-I $(GNUEFI_PATH)/inc -I $(GNUEFI_PATH)/inc/protocol -I $(GNUEFI_PATH)/inc/$(ARCH)
+LDFLAGS=-target x86_64-unknown-windows -nostdlib --warn-common \
+	'-Wl,-entry:efi_main' '-Wl,-subsystem:efi_application' -fuse-ld=lld-link
 
-LDFLAGS=-nostdlib -znocombreloc --warn-common --no-undefined --fatal-warnings --build-id=sha1 -shared -Bsymbolic \
-	-L $(GNUEFI_BUILD_DIR)/gnuefi -L $(GNUEFI_BUILD_DIR)/lib \
-	-T $(GNUEFI_PATH)/gnuefi/elf_$(ARCH)_efi.lds $(GNUEFI_BUILD_DIR)/gnuefi/crt0-efi-$(ARCH).o
-LDLIBS=-lgnuefi -lefi
-LOADLIBES=$(LDLIBS)
+.PHONY: all run clean
 
-FORMAT= --target=efi-app-$(ARCH)
+all: BOOTX64.efi
 
-.PHONY: all gnuefilib run clean
+%.efi: %.o
+	$(CC) $(LDFLAGS) -o $@ $<$(LDLIBS)
 
+%.o: %.c
+	$(CC) $(CFLAGS) -c -o $@ $<
 
-all: gnuefilib main.efi
-
-gnuefilib: $(GNUEFI_BUILD_DIR)
-
-$(GNUEFI_BUILD_DIR):
-	$(MAKE) -C $(SRCDIR)/gnu-efi/ lib gnuefi
-
-run: main.efi
-	uefi-run $(SRCDIR)/main.efi -- -net none -serial stdio -cpu qemu64
+run: BOOTX64.efi
+	uefi-run $(SRCDIR)/BOOTX64.efi -- -net none -serial stdio
 
 clean:
 	$(RM) main.o main.so main.efi
-	$(MAKE) -C $(GNUEFI_PATH) clean
-	rm -rf $(GNUEFI_BUILD_DIR)
-
-
-include $(GNUEFI_PATH)/Make.rules
