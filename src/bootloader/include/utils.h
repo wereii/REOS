@@ -4,11 +4,11 @@
 const char *_hexbase = "0123456789ABCDEF";
 
 inline void
-itohexa(unsigned long i, char *out)
-{
-    for (int i=0; i < sizeof(unsigned long); i++){
-        
-    }
+itohexa(long long int i, char *out){
+  short nibbles = sizeof(i)*2;
+  for(int x = 0; x < nibbles; x++){
+    out[nibbles - 1 - x] = _hexbase[((i>>x*4)&0xf)];
+  }
 }
 
 #endif //_BOOTLOADER_UTILS_H
